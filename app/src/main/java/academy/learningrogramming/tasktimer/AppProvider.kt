@@ -37,7 +37,7 @@ class AppProvider: ContentProvider() {
         val matcher = UriMatcher(UriMatcher.NO_MATCH)
 
         // e.g. content://learnprogramming.academy.tasktimer.provider/Tasks
-        matcher.addURI(CONTENT_AUTHORITY, TasksContract.TABLE_NAME, TASKS);
+        matcher.addURI(CONTENT_AUTHORITY, TasksContract.TABLE_NAME, TASKS)
 
         // e.g. content://learnprogramming.academy.tasktimer.provider/Tasks/8
         matcher.addURI(CONTENT_AUTHORITY, "${TasksContract.TABLE_NAME}/#", TASKS_ID)
@@ -58,7 +58,9 @@ class AppProvider: ContentProvider() {
     }
 
     override fun getType(uri: Uri): String {
+
         val match = uriMatcher.match(uri)
+
         return when (match) {
             TASKS -> TasksContract.CONTENT_TYPE
 
@@ -90,8 +92,8 @@ class AppProvider: ContentProvider() {
             TASKS_ID -> {
                 queryBuilder.tables = TasksContract.TABLE_NAME
                 val taskId = TasksContract.getId(uri)
-                queryBuilder.appendWhere("${TasksContract.Columns.ID} = ")       // <-- change method
-                queryBuilder.appendWhereEscapeString("$taskId")       // <-- change method
+                queryBuilder.appendWhere("${TasksContract.Columns.ID} = ")
+                queryBuilder.appendWhereEscapeString("$taskId")
             }
 
             TIMINGS -> queryBuilder.tables = TimingsContract.TABLE_NAME
@@ -99,8 +101,8 @@ class AppProvider: ContentProvider() {
             TIMINGS_ID -> {
                 queryBuilder.tables = TimingsContract.TABLE_NAME
                 val timingId = TimingsContract.getId(uri)
-                queryBuilder.appendWhere("${TimingsContract.Columns.ID} = ")   // <-- and here
-                queryBuilder.appendWhereEscapeString("$timingId")   // <-- and here
+                queryBuilder.appendWhere("${TimingsContract.Columns.ID} = ")
+                queryBuilder.appendWhereEscapeString("$timingId")
             }
 
 //            TASK_DURATIONS -> queryBuilder.tables = DurationsContract.TABLE_NAME
@@ -120,8 +122,6 @@ class AppProvider: ContentProvider() {
         Log.d(TAG, "query: rows in returned cursor = ${cursor.count}") // TODO remove this line
 
         return cursor
-
-
     }
 
     override fun insert(uri: Uri, values: ContentValues?): Uri? {
@@ -146,7 +146,7 @@ class AppProvider: ContentProvider() {
 
             TIMINGS -> {
                 val db = AppDatabase.getInstance(context!!).writableDatabase
-                recordId = db.insert(TimingsContract.TABLE_NAME, null, values)
+                recordId = db.insert(TimingsContract.TABLE_NAME, null,values)
                 if(recordId != -1L) {
                     returnUri = TimingsContract.buildUriFromId(recordId)
                 } else {
@@ -210,8 +210,9 @@ class AppProvider: ContentProvider() {
                 count = db.update(TimingsContract.TABLE_NAME, values, selectionCriteria, selectionArgs)
             }
 
-            else -> throw IllegalArgumentException("Unkown uri: $uri")
+            else -> throw IllegalArgumentException("Unknown uri: $uri")
         }
+
         Log.d(TAG, "Exiting update, returning $count")
         return count
     }
@@ -260,8 +261,9 @@ class AppProvider: ContentProvider() {
                 count = db.delete(TimingsContract.TABLE_NAME, selectionCriteria, selectionArgs)
             }
 
-            else -> throw IllegalArgumentException("Unkown uri: $uri")
+            else -> throw IllegalArgumentException("Unknown uri: $uri")
         }
+
         Log.d(TAG, "Exiting delete, returning $count")
         return count
     }

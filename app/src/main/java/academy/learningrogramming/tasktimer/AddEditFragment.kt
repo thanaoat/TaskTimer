@@ -3,14 +3,12 @@ package academy.learningrogramming.tasktimer
 import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.content.Context
-import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.annotation.IntegerRes
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.fragment_add_edit.*
 
@@ -38,21 +36,6 @@ class AddEditFragment : Fragment() {
         task = arguments?.getParcelable(ARG_TASK)
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        Log.d(TAG, "onActivityCreated: starts")
-        super.onActivityCreated(savedInstanceState)
-
-        if (listener is AppCompatActivity) {
-            val actionBar = (listener as AppCompatActivity?)?.supportActionBar
-            actionBar?.setDisplayHomeAsUpEnabled(true)
-        }
-
-        addedit_save.setOnClickListener {
-            saveTask()
-            listener?.onSavedClicked()
-        }
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -74,6 +57,7 @@ class AddEditFragment : Fragment() {
                 addedit_description.setText(task.description)
                 addedit_sortorder.setText(Integer.toString(task.sortOrder))
             } else {
+                // No task, so we must be adding a new task, and NOT editing an existing one
                 Log.d(TAG, "onViewCreated: No arguments, adding new record")
             }
         }
@@ -81,7 +65,7 @@ class AddEditFragment : Fragment() {
 
     private fun saveTask() {
         // Update the database if at least one field has changed
-        // - There's no need to hit the database unless ths has happened
+        // - There's no need to hit the database unless this has happened
         val sortOrder = if (addedit_sortorder.text.isNotEmpty()) {
             Integer.parseInt(addedit_sortorder.text.toString())
         } else {
@@ -122,6 +106,20 @@ class AddEditFragment : Fragment() {
         }
     }
 
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        Log.d(TAG, "onActivityCreated: starts")
+        super.onActivityCreated(savedInstanceState)
+
+        if (listener is AppCompatActivity) {
+            val actionBar = (listener as AppCompatActivity?)?.supportActionBar
+            actionBar?.setDisplayHomeAsUpEnabled(true)
+        }
+
+        addedit_save.setOnClickListener {
+            saveTask()
+            listener?.onSaveClicked()
+        }
+    }
     override fun onAttach(context: Context) {
         Log.d(TAG, "onAttach: starts")
         super.onAttach(context)
@@ -150,7 +148,7 @@ class AddEditFragment : Fragment() {
      * for more information.
      */
     interface OnSaveClicked {
-        fun onSavedClicked()
+        fun onSaveClicked()
     }
 
     companion object {

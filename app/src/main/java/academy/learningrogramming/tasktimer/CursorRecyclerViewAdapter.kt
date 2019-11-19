@@ -7,20 +7,20 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.extensions.LayoutContainer
-import kotlinx.android.synthetic.main.task_list_item.*
+import kotlinx.android.synthetic.main.task_list_items.*
 
 class TaskViewHolder(override val containerView: View) :
         RecyclerView.ViewHolder(containerView),
-        LayoutContainer {
-}
+        LayoutContainer {}
+
 private const val TAG = "CursorRecyclerViewAdapt"
 
-class CursorReyclerViewAdapter(private var  cursor: Cursor?) :
+class CursorRecyclerViewAdapter(private var cursor: Cursor?) :
         RecyclerView.Adapter<TaskViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskViewHolder {
         Log.d(TAG, "onCreateViewHolder: new view requested")
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.task_list_item, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.task_list_items, parent, false)
         return TaskViewHolder(view)
     }
 
@@ -29,7 +29,7 @@ class CursorReyclerViewAdapter(private var  cursor: Cursor?) :
 
         val cursor = cursor // avoid problems with smart cast
 
-        if (cursor == null || cursor.count == 0) {
+        if(cursor == null || cursor.count == 0) {
             Log.d(TAG, "onBindViewHolder: providing instructions")
             holder.tli_name.setText(R.string.instructions_heading)
             holder.tli_description.setText(R.string.instructions)
@@ -42,10 +42,10 @@ class CursorReyclerViewAdapter(private var  cursor: Cursor?) :
 
             // Create a Task object from the data in the cursor
             val task = Task(
-                cursor.getString(cursor.getColumnIndex(TasksContract.Columns.TASK_NAME)),
-                cursor.getString(cursor.getColumnIndex(TasksContract.Columns.TASK_DESCRIPTION)),
-                cursor.getInt(cursor.getColumnIndex(TasksContract.Columns.TASK_SORT_ORDER)))
-            // Remember  that the id isn't set in constructor
+                    cursor.getString(cursor.getColumnIndex(TasksContract.Columns.TASK_NAME)),
+                    cursor.getString(cursor.getColumnIndex(TasksContract.Columns.TASK_DESCRIPTION)),
+                    cursor.getInt(cursor.getColumnIndex(TasksContract.Columns.TASK_SORT_ORDER)))
+            // Remember that the id isn't set in the constructor
             task.id = cursor.getLong(cursor.getColumnIndex(TasksContract.Columns.ID))
 
             holder.tli_name.text = task.name
@@ -56,7 +56,7 @@ class CursorReyclerViewAdapter(private var  cursor: Cursor?) :
     }
 
     override fun getItemCount(): Int {
-        Log.d(TAG, "getItemCOunt: starts")
+        Log.d(TAG, "getItemCount: starts")
         val cursor = cursor
         val count = if (cursor == null || cursor.count == 0) {
             1
@@ -81,11 +81,16 @@ class CursorReyclerViewAdapter(private var  cursor: Cursor?) :
         if (newCursor === cursor) {
             return null
         }
+
         val numItems = itemCount
+
         val oldCursor = cursor
+        cursor = newCursor
         if (newCursor != null) {
+            // notify the observers about the new cursor
             notifyDataSetChanged()
         } else {
+            // notify the observers about the lack of a data set
             notifyItemRangeRemoved(0, numItems)
         }
         return oldCursor

@@ -16,6 +16,8 @@ private const val TAG = "MainActivity"
 
 class MainActivity : AppCompatActivity(), AddEditFragment.OnSaveClicked {
 
+    // Whether or the activity is in 2-pane mode
+    // i.e. running in landscape, or on a tablet.
     private var mTwoPane = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,7 +31,7 @@ class MainActivity : AppCompatActivity(), AddEditFragment.OnSaveClicked {
 
         val fragment = supportFragmentManager.findFragmentById(R.id.task_details_container)
         if(fragment != null) {
-            // There was an existing fragment to edit a task, mke sure te panes are set corectly
+            // There was an existing fragment to edit a task, make sure the panes are set correctly
             showEditPane()
         } else {
             task_details_container.visibility = if(mTwoPane) View.INVISIBLE else View.GONE
@@ -42,14 +44,15 @@ class MainActivity : AppCompatActivity(), AddEditFragment.OnSaveClicked {
         task_details_container.visibility = View.VISIBLE
         // hide the left hand pane, if in single pane view
         mainFragment.view?.visibility = if(mTwoPane) View.VISIBLE else View.GONE
+
     }
 
     private fun removeEditPane(fragment: Fragment? = null) {
-        Log.d(TAG, "removeEditPane: calded")
+        Log.d(TAG, "removeEditPane called")
         if(fragment != null) {
             supportFragmentManager.beginTransaction()
-                .remove(fragment)
-                .commit()
+                    .remove(fragment)
+                    .commit()
         }
 
         // Set the visibility of the right hand pane
@@ -60,8 +63,8 @@ class MainActivity : AppCompatActivity(), AddEditFragment.OnSaveClicked {
         supportActionBar?.setDisplayHomeAsUpEnabled(false)
     }
 
-    override fun onSavedClicked() {
-        Log.d(TAG, "onSavedClicked: called")
+    override fun onSaveClicked() {
+        Log.d(TAG, "onSaveClicked: called")
         val fragment = supportFragmentManager.findFragmentById(R.id.task_details_container)
         removeEditPane(fragment)
     }
