@@ -1,5 +1,7 @@
 package academy.learningrogramming.tasktimer
 
+import android.annotation.SuppressLint
+import android.content.ContentValues
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
@@ -8,6 +10,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.IntegerRes
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.fragment_add_edit.*
 
@@ -45,6 +48,7 @@ class AddEditFragment : Fragment() {
         }
 
         addedit_save.setOnClickListener {
+            saveTask()
             listener?.onSavedClicked()
         }
     }
@@ -59,13 +63,72 @@ class AddEditFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_add_edit, container, false)
     }
 
+    @SuppressLint("SetTextI18n")
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        Log.d(TAG, "onViewCreated: called")
+        if (savedInstanceState == null) {
+            val task = task
+            if (task != null) {
+                Log.d(TAG, "onViewCreated: Task details found, editing task ${task.id}")
+                addedit_name.setText(task.name)
+                addedit_description.setText(task.description)
+                addedit_sortorder.setText(Integer.toString(task.sortOrder))
+            } else {
+                Log.d(TAG, "onViewCreated: No arguments, adding new record")
+            }
+        }
+    }
+
+    private fun saveTask() {
+        // Update the database if at least one field has changed
+        // - There's no need to hit the database unless ths has happened
+        val sortOrder = if (addedit_sortorder.text.isNotEmpty()) {
+            Integer.parseInt(addedit_sortorder.text.toString())
+        } else {
+            0
+        }
+
+        val values = ContentValues()
+        val task = task
+
+        if (task != null) {
+            Log.d(TAG, "saveTask: updaing existing task")
+            if (addedit_name.text.toString() != task.name) {
+                values.put(TasksContract.Columns.TASK_NAME, addedit_name.text.toString())
+            }
+            if (addedit_description.text.toString() != task.description) {
+                values.put(TasksContract.Columns.TASK_DESCRIPTION,
+                    addedit_description.text.toString())
+            }
+            if (sortOrder != task.sortOrder) {
+                values.put(TasksContract.Columns.TASK_SORT_ORDER, sortOrder)
+            }
+            if(values.size() != 0) {
+                Log.d(TAG, "saveTask: Updating task")
+                activity?.contentResolver?.update(TasksContract.buildUriFromId(task.id),
+                    values, null, null)
+            }
+        } else {
+            Log.d(TAG, "saveTask: adding new task")
+            if (addedit_name.text.isNotEmpty()) {
+                values.put(TasksContract.Columns.TASK_NAME, addedit_name.text.toString())
+                if (addedit_description.text.isNotEmpty()) {
+                    values.put(TasksContract.Columns.TASK_DESCRIPTION,
+                        addedit_description.text.toString())
+                }
+                values.put(TasksContract.Columns.TASK_SORT_ORDER, sortOrder)
+                activity?.contentResolver?.insert(TasksContract.CONTENT_URI, values)
+            }
+        }
+    }
+
     override fun onAttach(context: Context) {
         Log.d(TAG, "onAttach: starts")
         super.onAttach(context)
         if (context is OnSaveClicked) {
             listener = context
         } else {
-            throw RuntimeException(context.toString() + " must implement OnSaveClicked")
+            throw RuntimeException("$context must implement OnSaveClicked")
         }
     }
 
@@ -105,11 +168,6 @@ class AddEditFragment : Fragment() {
                     putParcelable(ARG_TASK, task)
                 }
             }
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        Log.d(TAG, "onViewCreated: called")
-        super.onViewCreated(view, savedInstanceState)
     }
 
     override fun onViewStateRestored(savedInstanceState: Bundle?) {
