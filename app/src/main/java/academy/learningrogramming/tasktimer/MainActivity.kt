@@ -1,6 +1,5 @@
 package academy.learningrogramming.tasktimer
 
-import android.content.ContentValues
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
@@ -11,104 +10,17 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 private const val TAG = "MainActivity"
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), AddEditFragment.OnSaveClicked {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
-//        testInsert()
-
-//        testUpdate()
-
-//        testUpdateTwo()
-
-//        testDelete()
-
-        testDeleteTwo()
-
-        val projection = arrayOf(TasksContract.Columns.TASK_NAME, TasksContract.Columns.TASK_SORT_ORDER)
-        val sortColumn = TasksContract.Columns.TASK_SORT_ORDER
-
-//        val cursor = contentResolver.query(TasksContract.buildUriFromId(2),
-        val cursor = contentResolver.query(TasksContract.CONTENT_URI,
-            null,
-            null,
-            null,
-            sortColumn)
-        Log.d(TAG, "*****************************")
-        cursor?.use {
-            while (it.moveToNext()) {
-                // Cycle through all records
-                with(cursor) {
-                    val id = getLong(0)
-                    val name = getString(1)
-                    val description = getString(2)
-                    val sortOrder = getString(3)
-                    val result = "ID: $id. Name: $name. description: $description. sort order: $sortOrder"
-                    Log.d(TAG,"onCreate: reading data $result")
-                }
-            }
-        }
-        Log.d(TAG, "*****************************")
-
     }
 
-    private fun testDeleteTwo() {
-
-        val selection = TasksContract.Columns.TASK_DESCRIPTION + " = ?"
-        val selectionArgs = arrayOf("For deletion")
-        val rowsAffected = contentResolver.delete(TasksContract.CONTENT_URI,
-            selection,
-            selectionArgs)
-
-        Log.d(TAG, "Number of rows deleted is $rowsAffected")
-    }
-
-    private fun testDelete() {
-
-        val taskUri = TasksContract.buildUriFromId(3)
-        val rowsAffected = contentResolver.delete(taskUri, null, null)
-        Log.d(TAG, "Number of rows deleted is $rowsAffected")
-    }
-
-    private fun testUpdateTwo() {
-        val values = ContentValues().apply {
-            put(TasksContract.Columns.TASK_SORT_ORDER, 999)
-            put(TasksContract.Columns.TASK_DESCRIPTION, "For deletion")
-        }
-
-        val selection = TasksContract.Columns.TASK_SORT_ORDER + " = ?"
-        val selectionArgs = arrayOf("99")
-        val rowsAffected = contentResolver.update(TasksContract.CONTENT_URI,
-            values,
-            selection,
-            selectionArgs)
-        Log.d(TAG, "Number of rows updated is $rowsAffected")
-    }
-
-    private fun testUpdate() {
-        val values = ContentValues().apply {
-            put(TasksContract.Columns.TASK_NAME, "Content Provider")
-            put(TasksContract.Columns.TASK_DESCRIPTION, "Record content provider videos")
-        }
-
-        val taskUri = TasksContract.buildUriFromId(4)
-        val rowsAffected = contentResolver.update(taskUri, values, null, null)
-        Log.d(TAG, "Number of rows updated is $rowsAffected")
-    }
-
-    private fun testInsert() {
-        val values = ContentValues().apply {
-            put(TasksContract.Columns.TASK_NAME, "New Task 1")
-            put(TasksContract.Columns.TASK_DESCRIPTION, "Description 1")
-            put(TasksContract.Columns.TASK_SORT_ORDER, 2)
-        }
-
-        val uri = contentResolver.insert(TasksContract.CONTENT_URI, values)
-        Log.d(TAG, "New row id (in uri) is $uri")
-        Log.d(TAG, "id (in uri) is ${TasksContract.getId(uri!!)}")
+    override fun onSavedClicked() {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -121,9 +33,21 @@ class MainActivity : AppCompatActivity() {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        return when (item.itemId) {
-            R.id.menumain_settings -> true
-            else -> super.onOptionsItemSelected(item)
+        when (item.itemId) {
+            R.id.menumain_addTask-> taskEditRequest(null)
         }
+        return super.onOptionsItemSelected(item)
+    }
+
+    private fun taskEditRequest(task: Task?) {
+        Log.d(TAG, "taskEditRequest: starts")
+
+        // Create a new fragment to edit the task
+        val newFragment = AddEditFragment.newInstance(task)
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragment, newFragment)
+            .commit()
+
+        Log.d(TAG, "taskEditRequest: ends")
     }
 }

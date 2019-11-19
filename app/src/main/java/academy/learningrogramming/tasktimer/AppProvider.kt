@@ -262,7 +262,7 @@ class AppProvider: ContentProvider() {
 
             else -> throw IllegalArgumentException("Unkown uri: $uri")
         }
-        Log.d(TAG, "Exiting update, returning $count")
+        Log.d(TAG, "Exiting delete, returning $count")
         return count
     }
 }
