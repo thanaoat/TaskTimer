@@ -11,12 +11,38 @@ import kotlinx.android.synthetic.main.task_list_items.*
 
 class TaskViewHolder(override val containerView: View) :
         RecyclerView.ViewHolder(containerView),
-        LayoutContainer {}
+        LayoutContainer {
+    fun bind(task: Task, listener: CursorRecyclerViewAdapter.OnTaskClickListener) {
+        tli_name.text = task.name
+        tli_description.text = task.description
+        tli_edit.visibility = View.VISIBLE
+        tli_delete.visibility = View.VISIBLE
+
+        tli_edit.setOnClickListener {
+            listener.onEditClick(task)
+        }
+
+        tli_delete.setOnClickListener {
+            listener.onDeleteClick(task)
+        }
+
+        containerView.setOnLongClickListener {
+            listener.onTaskLongClick(task)
+            true
+        }
+    }
+}
 
 private const val TAG = "CursorRecyclerViewAdapt"
 
-class CursorRecyclerViewAdapter(private var cursor: Cursor?) :
+class CursorRecyclerViewAdapter(private var cursor: Cursor?, private val listener: OnTaskClickListener) :
         RecyclerView.Adapter<TaskViewHolder>() {
+
+    interface OnTaskClickListener {
+        fun onEditClick(task: Task)
+        fun onDeleteClick(task: Task)
+        fun onTaskLongClick(task: Task)
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskViewHolder {
         Log.d(TAG, "onCreateViewHolder: new view requested")
@@ -25,7 +51,6 @@ class CursorRecyclerViewAdapter(private var cursor: Cursor?) :
     }
 
     override fun onBindViewHolder(holder: TaskViewHolder, position: Int) {
-        Log.d(TAG, "onBindViewHolder: starts")
 
         val cursor = cursor // avoid problems with smart cast
 
@@ -48,15 +73,11 @@ class CursorRecyclerViewAdapter(private var cursor: Cursor?) :
             // Remember that the id isn't set in the constructor
             task.id = cursor.getLong(cursor.getColumnIndex(TasksContract.Columns.ID))
 
-            holder.tli_name.text = task.name
-            holder.tli_description.text = task.description
-            holder.tli_edit.visibility = View.VISIBLE   // TODO: add onClick
-            holder.tli_delete.visibility = View.VISIBLE // TODO: add onClick
+            holder.bind(task, listener)
         }
     }
 
     override fun getItemCount(): Int {
-        Log.d(TAG, "getItemCount: starts")
         val cursor = cursor
         val count = if (cursor == null || cursor.count == 0) {
             1
