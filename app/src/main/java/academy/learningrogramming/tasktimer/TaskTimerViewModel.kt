@@ -1,7 +1,10 @@
 package academy.learningrogramming.tasktimer
 
 import android.app.Application
+import android.database.ContentObserver
 import android.database.Cursor
+import android.net.Uri
+import android.os.Handler
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
@@ -11,12 +14,21 @@ private const val TAG = "TaskTimerViewModel"
 
 class TaskTimerViewModel (application: Application) : AndroidViewModel(application) {
 
+    private val contentObserver = object : ContentObserver(Handler()) {
+        override fun onChange(selfChange: Boolean, uri: Uri?) {
+            Log.d(TAG, "contentObserver.onChange: called. uri is $uri")
+            loadTasks()
+        }
+    }
+
     private val databaseCursor = MutableLiveData<Cursor>()
     val cursor: LiveData<Cursor>
         get() = databaseCursor
 
     init {
         Log.d(TAG, "TaskTimerViewModel: created")
+        getApplication<Application>().contentResolver.registerContentObserver(TasksContract.CONTENT_URI,
+            true, contentObserver)
         loadTasks()
     }
 
@@ -33,5 +45,10 @@ class TaskTimerViewModel (application: Application) : AndroidViewModel(applicati
                 projection, null, null,
                 sortOrder)
         databaseCursor.postValue(cursor)
+    }
+
+    override fun onCleared() {
+        Log.d(TAG, "onCleared: called")
+        getApplication<Application>().contentResolver.unregisterContentObserver(contentObserver)
     }
 }
