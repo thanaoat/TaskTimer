@@ -1,5 +1,6 @@
 package academy.learningrogramming.tasktimer
 
+import android.annotation.SuppressLint
 import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
@@ -7,6 +8,8 @@ import androidx.appcompat.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 
 import kotlinx.android.synthetic.main.activity_main.*
@@ -23,6 +26,8 @@ class MainActivity : AppCompatActivity(),
     // Whether or the activity is in 2-pane mode
     // i.e. running in landscape, or on a tablet.
     private var mTwoPane = false
+
+    private var aboutDialog: AlertDialog? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.d(TAG, "onCreate: starts")
@@ -85,6 +90,7 @@ class MainActivity : AppCompatActivity(),
         // as you specify a parent activity in AndroidManifest.xml.
         when (item.itemId) {
             R.id.menumain_addTask-> taskEditRequest(null)
+            R.id.menumain_showAbout -> showAboutDialog()
             android.R.id.home -> {
                 Log.d(TAG, "onOptionItemSelected: home button pressed")
                 val fragment = findFragmentById(R.id.task_details_container)
@@ -101,6 +107,54 @@ class MainActivity : AppCompatActivity(),
         }
         return super.onOptionsItemSelected(item)
     }
+
+    @SuppressLint("InflateParams")
+    private fun showAboutDialog() {
+        val messageView = layoutInflater.inflate(R.layout.about, null, false)
+        val builder = AlertDialog.Builder(this)
+
+        builder.setTitle(R.string.app_name)
+        builder.setIcon(R.mipmap.ic_launcher)
+
+        builder.setPositiveButton(R.string.ok) { _, _ ->
+            Log.d(TAG, "onClick: Entering messageView.onClick")
+            if (aboutDialog != null && aboutDialog?.isShowing == true) {
+                aboutDialog?.dismiss()
+            }
+        }
+
+        aboutDialog = builder.setView(messageView).create()
+        aboutDialog?.setCanceledOnTouchOutside(true)
+
+        val aboutVersion = messageView.findViewById(R.id.about_version) as TextView
+        aboutVersion.text = BuildConfig.VERSION_NAME
+
+        aboutDialog?.show()
+    }
+
+//    @SuppressLint("InflateParams")
+//    private fun showAboutDialog() {
+//        val messageView = layoutInflater.inflate(R.layout.about, null, false)
+//        val builder = AlertDialog.Builder(this)
+//
+//        builder.setTitle(R.string.app_name)
+//        builder.setIcon(R.mipmap.ic_launcher)
+//
+//        aboutDialog = builder.setView(messageView).create()
+//        aboutDialog?.setCanceledOnTouchOutside(true)
+//
+//        messageView.setOnClickListener {
+//            Log.d(TAG, "Entering messageView.onClick")
+//            if (aboutDialog != null && aboutDialog?.isShowing == true) {
+//                aboutDialog?.dismiss()
+//            }
+//        }
+//
+//        val aboutVersion = messageView.findViewById(R.id.about_version) as TextView
+//        aboutVersion.text = BuildConfig.VERSION_NAME
+//
+//        aboutDialog?.show()
+//    }
 
     override fun onTaskEdit(task: Task) {
         taskEditRequest(task)
@@ -174,6 +228,9 @@ class MainActivity : AppCompatActivity(),
     override fun onStop() {
         Log.d(TAG, "onStop: called")
         super.onStop()
+        if (aboutDialog?.isShowing == true) {
+            aboutDialog?.dismiss()
+        }
     }
 
     override fun onDestroy() {
