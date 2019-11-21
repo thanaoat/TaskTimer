@@ -33,7 +33,7 @@ class MainActivity : AppCompatActivity(),
         mTwoPane = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
         Log.d(TAG, "onCreate: twoPane is $mTwoPane")
 
-        val fragment = supportFragmentManager.findFragmentById(R.id.task_details_container)
+        val fragment = findFragmentById(R.id.task_details_container)
         if(fragment != null) {
             // There was an existing fragment to edit a task, make sure the panes are set correctly
             showEditPane()
@@ -54,9 +54,10 @@ class MainActivity : AppCompatActivity(),
     private fun removeEditPane(fragment: Fragment? = null) {
         Log.d(TAG, "removeEditPane called")
         if(fragment != null) {
-            supportFragmentManager.beginTransaction()
-                    .remove(fragment)
-                    .commit()
+//            supportFragmentManager.beginTransaction()
+//                    .remove(fragment)
+//                    .commit()
+            removeEditPane(fragment)
         }
 
         // Set the visibility of the right hand pane
@@ -69,8 +70,7 @@ class MainActivity : AppCompatActivity(),
 
     override fun onSaveClicked() {
         Log.d(TAG, "onSaveClicked: called")
-        val fragment = supportFragmentManager.findFragmentById(R.id.task_details_container)
-        removeEditPane(fragment)
+        removeEditPane(findFragmentById(R.id.task_details_container))
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -87,7 +87,7 @@ class MainActivity : AppCompatActivity(),
             R.id.menumain_addTask-> taskEditRequest(null)
             android.R.id.home -> {
                 Log.d(TAG, "onOptionItemSelected: home button pressed")
-                val fragment = supportFragmentManager.findFragmentById(R.id.task_details_container)
+                val fragment = findFragmentById(R.id.task_details_container)
 //                removeEditPane(fragment)
                 if ((fragment is AddEditFragment) && fragment.isDirty()) {
                     showConfirmationDialog(DIALOG_ID_CANCEL_EDIT,
@@ -110,18 +110,19 @@ class MainActivity : AppCompatActivity(),
         Log.d(TAG, "taskEditRequest: starts")
 
         // Create a new fragment to edit the task
-        val newFragment = AddEditFragment.newInstance(task)
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.task_details_container, newFragment)
-            .commit()
+//        val newFragment = AddEditFragment.newInstance(task)
+//        supportFragmentManager.beginTransaction()
+//            .replace(R.id.task_details_container, newFragment)
+//            .commit()
 
+        replaceFragment(AddEditFragment.newInstance(task), R.id.task_details_container)
         showEditPane()
 
         Log.d(TAG, "taskEditRequest: ends")
     }
 
     override fun onBackPressed() {
-        val fragment = supportFragmentManager.findFragmentById(R.id.task_details_container)
+        val fragment = findFragmentById(R.id.task_details_container)
         if (fragment == null || mTwoPane) {
             super.onBackPressed()
         } else {
@@ -140,7 +141,7 @@ class MainActivity : AppCompatActivity(),
     override fun onPositiveDialogResult(dialogId: Int, args: Bundle) {
         Log.d(TAG, "onPositiveDialogResult: called with dialogId $dialogId")
         if (dialogId == DIALOG_ID_CANCEL_EDIT) {
-            val fragment = supportFragmentManager.findFragmentById(R.id.task_details_container)
+            val fragment = findFragmentById(R.id.task_details_container)
             removeEditPane(fragment)
         }
     }
