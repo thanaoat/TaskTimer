@@ -88,6 +88,15 @@ class AddEditFragment : Fragment() {
         }
     }
 
+    fun isDirty(): Boolean {
+        val newTask = taskFromUi()
+        return ((newTask != task) &&
+                (newTask.name.isNotBlank()
+                        || newTask.description.isNotBlank()
+                        || newTask.sortOrder != 0)
+                )
+    }
+
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         Log.d(TAG, "onActivityCreated: starts")
         super.onActivityCreated(savedInstanceState)
